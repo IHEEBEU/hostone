@@ -4,7 +4,7 @@ let cachedDb = null;
 let mongoClient = null;
 
 const connectDB = async () => {
-  if (cachedDb && mongoClient && mongoClient.isConnected()) {
+  if (cachedDb && mongoClient && mongoClient.topology.isConnected()) {
     console.info("Using cached db connection");
     return cachedDb;
   }
@@ -13,19 +13,18 @@ const connectDB = async () => {
     useUnifiedTopology: true,
     useNewUrlParser: true,
     connectTimeoutMS: 90000,
-    poolSize: 10
   });
 
   try {
     await mongoClient.connect();
 
-    if (!mongoClient.isConnected()) {
+    if (mongoClient.topology.isConnected()) {
+      cachedDb = mongoClient.db("blog-app"); // Replace with your actual database name
+      console.info("Connected to MongoDB");
+      return cachedDb;
+    } else {
       throw new Error("Unable to connect to MongoDB");
     }
-
-    cachedDb = mongoClient.db("test"); // Replace with your actual database name
-    console.info("Connected to MongoDB");
-    return cachedDb;
   } catch (error) {
     console.error("Error connecting to MongoDB: ", error);
     throw error;
@@ -34,7 +33,7 @@ const connectDB = async () => {
 
 const closeDBConnection = async () => {
   try {
-    if (mongoClient) {
+    if (mongoClient && mongoClient.topology.isConnected()) {
       await mongoClient.close();
       cachedDb = null;
       console.log("MongoDB connection closed");

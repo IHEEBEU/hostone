@@ -1,22 +1,16 @@
 const express = require("express");
-const { MongoClient } = require("mongodb");
 const blogroutes = require('../db/routes/blogRoutes.js');
 const userroutes = require('../db/routes/userRoutes');
-const cors = require('cors')
+const cors = require('cors');
+const { connectDB } = require('../db/config.js'); // Import the connectDB function
+
 const app = express();
 app.use(express.json());
-app.use(cors())
-
-const uri = 'mongodb+srv://mongo:iheb1234@cluster0.fowqa3m.mongodb.net/test';
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  connectTimeoutMS: 90000,
-});
+app.use(cors());
 
 (async () => {
   try {
-    await client.connect();
+    await connectDB(); // Use the connectDB function to establish the connection
     console.log('Connected to the database');
   } catch (error) {
     console.error('Error connecting to the database:', error);
